@@ -1,0 +1,168 @@
+---
+title: "Healthcare Worker Analysis - WOMBAT Study (v1)"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# Libraries
+library(readr)
+library(tidyverse)  
+library(lubridate) 
+library(knitr) 
+library(kableExtra)
+library(DT)
+
+DOCTOR_NURSE_FORM_BRB_v1 <- read_csv("data/DOCTOR-NURSE_FORM_BRB_v1_from_23_03_2025_to_09_04_2025.csv", 
+                                     col_types = cols(`session date` = col_character(), 
+                                                      `session start` = col_time(format = "%H:%M:%S"), 
+                                                      `session end` = col_time(format = "%H:%M:%S"), 
+                                                      `start time` = col_time(format = "%H:%M:%S"), 
+                                                      `end time` = col_time(format = "%H:%M:%S"), 
+                                                      `elapsed time` = col_time(format = "%H:%M:%S"), 
+                                                      `total time` = col_time(format = "%H:%M:%S"), 
+                                                      `active 1` = col_time(format = "%H:%M:%S")))
+  
+# Data cleaning and time calculations
+data_wmbt_time <- DOCTOR_NURSE_FORM_BRB_v1 %>%
+  mutate(total_session = as.numeric(`session end` - `session start`) / 60,
+         total_activity = as.numeric(`active 1`) / 60
+  ) %>% 
+  filter(!`session id` == 10195) # seems like a test session
+
+```
+
+### Data Overview
+
+```{r analysis, echo=FALSE}
+
+general_summary <- tibble(
+  Metric = c(
+    "Unique sessions", "Unique observers", "Unique HCWs"
+  ),
+  Value = c(n_distinct(data_wmbt_time$`session id`),
+    n_distinct(data_wmbt_time$`observer id`),
+    n_distinct(data_wmbt_time$`participant id`)
+  )
+)
+
+kable(general_summary, caption = "General Data Overview") %>%
+  kable_styling(full_width = FALSE)
+```
+
+### Observer Statistics
+
+``` {r , echo=FALSE}
+observer_summary <- data_wmbt_time %>%
+  group_by(`observer id`) %>%
+  summarise(
+    n_sessions = n_distinct(`session id`),
+    n_HCW = n_distinct(`participant id`),
+    avg_activities_per_session = mean(table(`session id`), na.rm = TRUE) %>% round()
+  )
+
+kable(observer_summary, caption = "Session Statistics by Observer") %>%
+  kable_styling(full_width = FALSE)
+```
+
+### Session Analysis
+
+``` {r , echo=FALSE}
+
+session_summary <- data_wmbt_time %>%
+  group_by(`What (DR-NURSE)`) %>%
+  summarise(
+    total_sessions = n_distinct(`session id`),
+    avg_act_session = round(n()/total_sessions),
+    total_time_min = sum(total_activity),
+    avg_time_min = mean(total_activity),
+    max_time_min = max(total_activity),
+    min_time_min = min(total_activity)
+  ) %>%
+  arrange(desc(total_time_min)) %>%
+  mutate(across(ends_with("_min"), ~ round(., 2))) 
+
+kable(session_summary, caption = "Time Spent per Activity") %>%
+  kable_styling(full_width = FALSE)
+```
+
+### Activity Analysis
+
+``` {r , echo=FALSE}
+# activities_per_session <- data_wmbt_time %>%
+#   group_by(`session id`) %>%
+#   summarise(
+#     n_unique_activities = n_distinct(`What (DR-NURSE)`, na.rm = TRUE) 
+#   ) %>%
+#   arrange(desc(n_unique_activities))
+# 
+# kable(activities_per_session, caption = "Activities per session") %>%
+#   kable_styling(full_width = FALSE)
+
+session_activity_time <- data_wmbt_time %>%
+  group_by(`session id`, `What (DR-NURSE)`, total_session) %>%
+  summarise(
+    activity_time = sum(total_activity, na.rm = TRUE),
+    .groups = 'drop'
+  ) %>% 
+  mutate(
+    pct_time = (activity_time / total_session) * 100
+  )
+
+final_activity_summary <- session_activity_time %>%
+  group_by(`What (DR-NURSE)`) %>%
+  summarise(
+    avg_pct_time = mean(pct_time, na.rm = TRUE) %>% round(2),
+    sd_pct_time = sd(pct_time, na.rm = TRUE) %>% round(2),
+    n_sessions = n()
+  ) %>%
+  arrange(desc(avg_pct_time))  %>%
+  mutate(
+    avg_pct_time = sprintf("%.1f%%", avg_pct_time),
+    sd_pct_time = sprintf("±%.1f%%", sd_pct_time)
+  )
+
+kable(final_activity_summary, caption = "Average Percentage of Session Time Spent on Each Activity")
+```
+
+### Technology Usage
+
+``` {r , echo=FALSE}
+how_activity <- data_wmbt_time %>%
+  group_by(`What (DR-NURSE)`) %>%
+  summarise(
+  n_activity = n(),
+  n_paper_based = sum(`[How] Paper Based Record`),
+  pct_paper = ((n_paper_based / n_activity) * 100) %>% round(1),
+  n_desktop = sum(`[How] Desktop Computer`),
+  pct_desktop = ((n_desktop / n_activity) * 100) %>% round(1),
+  n_mobile = sum(`[How] Mobile Computer`),
+  pct_mobile = ((n_mobile / n_activity) * 100) %>% round(1),
+  n_phone = sum(`[How] Phone`),
+  pct_phone = ((n_phone / n_activity) * 100) %>% round(1),
+  pct_nothing = (100 - (pct_paper + pct_desktop + pct_mobile + pct_phone))
+  ) %>% 
+  select(activity = `What (DR-NURSE)`,n_activity, pct_paper, pct_desktop, pct_mobile, pct_phone, pct_nothing) %>% 
+  arrange(desc(n_activity)) 
+
+kable(how_activity, caption = "Tool Usage by Activity (%)") %>%
+  kable_styling(full_width = FALSE)
+```
+
+### Location Analysis
+
+``` {r , echo=FALSE}
+location_summary <- data_wmbt_time %>%
+  group_by(`Where`) %>%
+  summarise(
+    n_sessions = n_distinct(`session id`),
+    total_time_min = sum(total_activity) %>% round(2),
+    activities_list = paste(unique(`What (DR-NURSE)`), collapse = ", ")) %>% 
+  arrange(desc(total_time_min))
+
+kable(location_summary, caption = "Observations by Location", booktabs = TRUE) %>%
+  kable_styling(full_width = FALSE)
+
+
+```
+
+
