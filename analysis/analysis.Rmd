@@ -83,6 +83,30 @@ session_summary <- data_wmbt_time %>%
 
 kable(session_summary, caption = "Time Spent per Activity") %>%
   kable_styling(full_width = FALSE)
+
+session_summary <- data_wmbt_time %>%
+  group_by(`session id`, `What (DR-NURSE)`) %>%
+  summarise(
+    n_occurrences = n(),
+    total_time_min = sum(total_activity, na.rm = TRUE),
+    avg_time_min = round(mean(total_activity, na.rm = TRUE), 2), 
+    .groups = 'drop'
+  ) %>%
+  group_by(`session id`) %>% 
+  mutate(
+    pct_session_time = round(((total_time_min / sum(total_time_min)) * 100), 2
+  )) %>%
+  arrange(`session id`, desc(total_time_min)) %>%
+  mutate(across(ends_with("_min"), ~ round(., 2)))
+
+datatable(session_summary,
+  rownames = FALSE,
+  caption = "Session Activity Summary",
+  extensions = c('Buttons'),
+  options = list(pageLength = 10
+  ),
+  filter = 'top'  # Add filters for each column
+) 
 ```
 
 ### Activity Analysis
