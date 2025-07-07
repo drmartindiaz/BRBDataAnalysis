@@ -57,7 +57,8 @@ observer_summary <- data_wmbt_time %>%
   summarise(
     n_sessions = n_distinct(`session id`),
     n_HCW = n_distinct(`participant id`),
-    avg_activities_per_session = mean(table(`session id`), na.rm = TRUE) %>% round()
+    avg_n_activities = mean(table(`session id`), na.rm = TRUE) %>% round(),
+    avg_time_min = round(mean(total_session, na.rm = TRUE), 2)
   )
 
 kable(observer_summary, caption = "Session Statistics by Observer") %>%
@@ -67,24 +68,7 @@ kable(observer_summary, caption = "Session Statistics by Observer") %>%
 ### Session Analysis
 
 ``` {r , echo=FALSE}
-
-session_summary <- data_wmbt_time %>%
-  group_by(`What (DR-NURSE)`) %>%
-  summarise(
-    total_sessions = n_distinct(`session id`),
-    avg_act_session = round(n()/total_sessions),
-    total_time_min = sum(total_activity),
-    avg_time_min = mean(total_activity),
-    max_time_min = max(total_activity),
-    min_time_min = min(total_activity)
-  ) %>%
-  arrange(desc(total_time_min)) %>%
-  mutate(across(ends_with("_min"), ~ round(., 2))) 
-
-kable(session_summary, caption = "Time Spent per Activity") %>%
-  kable_styling(full_width = FALSE)
-
-session_summary <- data_wmbt_time %>%
+session_summary_2 <- data_wmbt_time %>%
   group_by(`session id`, `What (DR-NURSE)`) %>%
   summarise(
     n_occurrences = n(),
@@ -99,19 +83,37 @@ session_summary <- data_wmbt_time %>%
   arrange(`session id`, desc(total_time_min)) %>%
   mutate(across(ends_with("_min"), ~ round(., 2)))
 
-datatable(session_summary,
+datatable(session_summary_2,
   rownames = FALSE,
   caption = "Session Activity Summary",
   extensions = c('Buttons'),
   options = list(pageLength = 10
   ),
-  filter = 'top'  # Add filters for each column
+  filter = 'top'
 ) 
+
 ```
 
 ### Activity Analysis
 
-``` {r , echo=FALSE}
+``` {r , echo=FALSE, warning = FALSE}
+
+activity_summary <- data_wmbt_time %>%
+  group_by(`What (DR-NURSE)`) %>%
+  summarise(
+    total_sessions = n_distinct(`session id`),
+    avg_act_session = round(n()/total_sessions),
+    total_time_min = sum(total_activity),
+    avg_time_min = mean(total_activity),
+    max_time_min = max(total_activity),
+    min_time_min = min(total_activity)
+  ) %>%
+  arrange(desc(total_time_min)) %>%
+  mutate(across(ends_with("_min"), ~ round(., 2))) 
+
+kable(activity_summary, caption = "Time Spent per Activity") %>%
+  kable_styling(full_width = FALSE)
+
 # activities_per_session <- data_wmbt_time %>%
 #   group_by(`session id`) %>%
 #   summarise(
@@ -146,29 +148,56 @@ final_activity_summary <- session_activity_time %>%
   )
 
 kable(final_activity_summary, caption = "Average Percentage of Session Time Spent on Each Activity")
+
+# Activity plot
+plot_data <- final_activity_summary %>%
+  mutate(avg_pct = as.numeric(gsub("%", "", avg_pct_time)),
+         sd_pct = as.numeric(gsub("±|%", "", sd_pct_time)))
+
+ggplot(plot_data, aes(x = avg_pct, y = reorder(`What (DR-NURSE)`, avg_pct))) +
+  geom_point(size = 3, color = "#0072B2") +
+  geom_errorbarh(aes(xmin = avg_pct - sd_pct, xmax = avg_pct + sd_pct), 
+                 height = 0.2, color = "#0072B2") +
+  labs(title = "Time Allocation by Activity with Variability",
+       x = "Average Percentage of Session Time (%)", 
+       y = "") +
+  theme_minimal() +
+  scale_x_continuous(limits = c(0, NA)) +
+  geom_vline(xintercept = mean(plot_data$avg_pct), linetype = "dashed", color = "gray50")
+
 ```
 
 ### Technology Usage
 
 ``` {r , echo=FALSE}
-how_activity <- data_wmbt_time %>%
+tool_time_summary <- data_wmbt_time %>%
   group_by(`What (DR-NURSE)`) %>%
   summarise(
-  n_activity = n(),
-  n_paper_based = sum(`[How] Paper Based Record`),
-  pct_paper = ((n_paper_based / n_activity) * 100) %>% round(1),
-  n_desktop = sum(`[How] Desktop Computer`),
-  pct_desktop = ((n_desktop / n_activity) * 100) %>% round(1),
-  n_mobile = sum(`[How] Mobile Computer`),
-  pct_mobile = ((n_mobile / n_activity) * 100) %>% round(1),
-  n_phone = sum(`[How] Phone`),
-  pct_phone = ((n_phone / n_activity) * 100) %>% round(1),
-  pct_nothing = (100 - (pct_paper + pct_desktop + pct_mobile + pct_phone))
-  ) %>% 
-  select(activity = `What (DR-NURSE)`,n_activity, pct_paper, pct_desktop, pct_mobile, pct_phone, pct_nothing) %>% 
-  arrange(desc(n_activity)) 
+    total_time = sum(total_activity, na.rm = TRUE),
+    paper_time = sum(total_activity * `[How] Paper Based Record`, na.rm = TRUE),
+    digital_time = sum(total_activity * (`[How] Desktop Computer` | `[How] Mobile Computer`), na.rm = TRUE),
+    phone_time = sum(total_activity * `[How] Phone`, na.rm = TRUE),
+    .groups = 'drop'
+  ) %>%
+  mutate(
+    across(ends_with("_time"), ~ round(., 2)),
+    pct_paper = round((paper_time / total_time) * 100, 1),
+    pct_digital = round((digital_time / total_time) * 100, 1),
+    pct_phone = round((phone_time / total_time) * 100, 1)
+  ) %>%
+  select(
+    Activity = `What (DR-NURSE)`,
+    `Total Time (min)` = total_time,
+    `Paper Time (min)` = paper_time,
+    `Digital Time (min)` = digital_time,
+    `Phone Time (min)` = phone_time,
+    `% Paper` = pct_paper,
+    `% Digital` = pct_digital,
+    `% Phone` = pct_phone
+  ) %>%
+  arrange(desc(`Total Time (min)`))
 
-kable(how_activity, caption = "Tool Usage by Activity (%)") %>%
+kable(tool_time_summary, caption = "Tool Usage by Activity (%)") %>%
   kable_styling(full_width = FALSE)
 ```
 
