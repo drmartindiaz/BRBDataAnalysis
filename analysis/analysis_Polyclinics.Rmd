@@ -57,7 +57,9 @@ data_wmbt_time <- DOCTOR_NURSE_FORM_BRB_v1 %>%
          `What (DR-NURSE) (subcategories)` = case_when(`What (DR-NURSE) (subcategories)` == "Other Indiret Care" ~ "Other Indirect Care",
                                                        TRUE ~ `What (DR-NURSE) (subcategories)`),
          task_order = as.numeric(str_extract(`observer/session/task id`, "(?<=_)\\d+$"))) %>% 
-   left_join(wombat_type_professional) 
+   left_join(wombat_type_professional) %>% 
+  mutate(health_professional_desc = case_when(`participant id` == "Nurse 2" ~ "Nurse",
+                                       TRUE ~ health_professional_desc))
   
 data_wmbt_time_2 <-  data_wmbt_time %>% 
   rename(What = `What (DR-NURSE)`,
@@ -91,7 +93,7 @@ data_wmbt_time_2 <-  data_wmbt_time %>%
 
 tipos_profesional <- data_wmbt_time %>% 
   rename(Metric = health_professional_desc) %>% 
-  distinct(`participant id`, Metric) %>% count(Metric, name = "Count") %>% 
+  distinct(`participant id`, `session id`, Metric) %>% count(Metric, name = "Count") %>%
   mutate(Metric = case_when(Metric == "Nurse" ~ "- Nurses",
                             Metric == "Doctor" ~ "- Physicians",
                             Metric == "Other" ~ "- Others",
@@ -267,31 +269,19 @@ tool_time_summary <- data_wmbt_time_2 %>%
   filter(!how == "None") %>% 
   group_by(What) %>%
   summarise(
-    n_act = n(),
-    paper_time = sum(total_activity * `[How] Paper Based Record`, na.rm = TRUE),
-    computer_time = sum(total_activity * (`[How] Desktop Computer`), na.rm = TRUE),
-    mobile_time = sum(total_activity * (`[How] Mobile Computer`), na.rm = TRUE),
-    phone_time = sum(total_activity * `[How] Phone`, na.rm = TRUE),
-    total_time = sum(paper_time, computer_time, mobile_time,phone_time, na.rm = TRUE),
+    paper_time = round(sum(total_activity * `[How] Paper Based Record`, na.rm = TRUE), 1),
+    computer_time = round(sum(total_activity * `[How] Desktop Computer`, na.rm = TRUE), 1),
+    mobile_time = round(sum(total_activity * `[How] Mobile Computer`, na.rm = TRUE), 1),
+    phone_time = round(sum(total_activity * `[How] Phone`, na.rm = TRUE), 1),
+    total_time = round(sum(total_activity, na.rm = TRUE), 1),
     .groups = 'drop'
-  ) %>%
-  mutate(
-    across(ends_with("_time"), ~ round(., 2)),
-    pct_paper = round((paper_time / total_time) * 100, 1),
-    pct_computer = round((computer_time / total_time) * 100, 1),
-    pct_mobile = round((mobile_time / total_time) * 100, 1),
-    pct_phone = round((phone_time / total_time) * 100, 1)
   ) 
 
 tool_table <- tool_time_summary %>%
   select(
     Activity = What,
     `Total Time` = total_time,
-    n_act,
-    `% Paper` = pct_paper,
-    `% Mobile` = pct_mobile,
-    `% Computer` = pct_computer,
-    `% Phone` = pct_phone
+    paper_time, computer_time, mobile_time, phone_time
   ) %>%
   arrange(desc(`Total Time`))
 
