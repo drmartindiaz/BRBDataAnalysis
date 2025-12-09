@@ -18,14 +18,7 @@ Analysis of Behavioral Research in Healthcare (BRB) data from Queen Elizabeth Ho
         - wombat_analysis_polyclinics_DR_Nurse.R
         - processed_data/
     - raw_data/   # Source CSV files
-        - wombat_type_professional.csv
-        - wombat_type_professional_2.csv
-        - [other CSV files]
     - visualization_analysis/  # R Markdown reports
-        - analysis_QEH.Rmd
-        - analysis_QEH.html
-        - analysis_Clerks.Rmd
-        - analysis_Clerks.html
 
 ## 📝 Data Notes
 
