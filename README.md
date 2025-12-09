@@ -4,21 +4,21 @@ Analysis of Behavioral Research in Healthcare (BRB) data from Queen Elizabeth Ho
 
 ## 📁 Repository Structure
 - brb_analysis/
-    - QEH/  # Queen Elizabeth Hospital analyses
-        - Doctor_Nurse/   # Doctor & Nurse activity analysis
+    - QEH/ 
+        - Doctor_Nurse/  
             - wombat_analysis_QEH_DR_Nurse.R
             - processed_data/
-        - Clerks/  # Clerk activity analysis
+        - Clerks/ 
             - wombat_analysis_Clerks.R
             - processed_data/
-        - Patients/ # Patients analysis
+        - Patients/
             - wombat_analysis_Patient.R
             - processed_data/
-    - Polyclinics/ # Polyclinics Doctor/Nurse analysis
+    - Polyclinics/
         - wombat_analysis_polyclinics_DR_Nurse.R
         - processed_data/
-    - raw_data/   # Source CSV files
-    - visualization_analysis/  # R Markdown reports
+    - raw_data/   (CSV files)
+    - visualization_analysis/  (R Markdown reports)
 
 ## 📝 Data Notes
 
