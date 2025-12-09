@@ -13,7 +13,12 @@ library(knitr)
 library(kableExtra)
 library(DT)
 library(patchwork)
+library(hms)
 library(scales)
+
+wombat_type_professional <- read_delim("data/wombat_type_professional.csv", 
+                                         delim = ";", escape_double = FALSE, trim_ws = TRUE) %>% 
+  select(`session id`, `health_professional_desc`)
 
 
 DOCTOR_NURSE_FORM_BRB_v1 <- read_csv("data/DOCTOR-NURSE_FORM_BRB_v1_from_23_03_2025_to_09_04_2025.csv", 
@@ -24,9 +29,16 @@ DOCTOR_NURSE_FORM_BRB_v1 <- read_csv("data/DOCTOR-NURSE_FORM_BRB_v1_from_23_03_2
                                                       `end time` = col_time(format = "%H:%M:%S"), 
                                                       `elapsed time` = col_time(format = "%H:%M:%S"), 
                                                       `total time` = col_time(format = "%H:%M:%S"), 
-                                                      `active 1` = col_time(format = "%H:%M:%S")))
-  
-DOCTOR_NURSE_FORM_BRB_v2 <- read_csv("data/DOCTOR-NURSE_FORM_BRB_v2_from_23_03_2025_to_30_04_2025.csv", 
+                                                      `active 1` = col_time(format = "%H:%M:%S"))) %>% 
+  mutate(`session id` = case_when(`session id`== 10202 ~ 10203,
+                           TRUE ~ `session id`),
+  `session start` = case_when(`session id` == "10203" ~ hms(hours = 14, minutes = 21, seconds = 00),
+                            TRUE ~ `session start`),
+  `session end` = case_when(`session id` == "10203" ~ hms(hours = 17, minutes = 47, seconds = 45),
+                          TRUE ~ `session end`)) %>% 
+  left_join(wombat_type_professional, by = "session id")
+
+DOCTOR_NURSE_FORM_BRB_v2 <- read_csv("data/DOCTOR-NURSE_FORM_BRB_v2_from_26_03_2025_to_09_09_2025.csv", 
                                      col_types = cols(`session date` = col_character(), 
                                                       `session start` = col_time(format = "%H:%M:%S"), 
                                                       `session end` = col_time(format = "%H:%M:%S"), 
@@ -35,14 +47,12 @@ DOCTOR_NURSE_FORM_BRB_v2 <- read_csv("data/DOCTOR-NURSE_FORM_BRB_v2_from_23_03_2
                                                       `elapsed time` = col_time(format = "%H:%M:%S"), 
                                                       `total time` = col_time(format = "%H:%M:%S"), 
                                                       `active 1` = col_time(format = "%H:%M:%S"))) %>% 
-  select(- `[With Whom] Student`) %>% 
+  select(- `[With Whom] Student`, -`int task id 1`,-`int start 1`,-`int end 1`,-`active 2`,-`inactive 1`) %>% # Saco columnas que antes no estaban y son NA
   rename(`What (DR-NURSE)` = `What (DR-NURSE v2)`,
          `What (DR-NURSE) (subcategories)` = `What (DR-NURSE v2) (subcategories)`,
-         `[With Whom] Clerks` = `[With Whom] Clerk`)
-
-
-wombat_type_professional <- read_delim("data/wombat_type_professional.csv", 
-                                       delim = ";", escape_double = FALSE, trim_ws = TRUE)
+         `[With Whom] Clerks` = `[With Whom] Clerk`)  %>% 
+  left_join(wombat_type_professional, by = "session id") %>% 
+  filter(!is.na(health_professional_desc))
 
 data_wmbt_time <- DOCTOR_NURSE_FORM_BRB_v1 %>%
   rbind(DOCTOR_NURSE_FORM_BRB_v2) %>% 
@@ -58,7 +68,7 @@ data_wmbt_time <- DOCTOR_NURSE_FORM_BRB_v1 %>%
          `What (DR-NURSE)` = case_when(`What (DR-NURSE)` == "Inter-Professional Communication" ~ "Professional Communication",
                                        TRUE ~ `What (DR-NURSE)`),
          `What (DR-NURSE) (subcategories)` = case_when(`What (DR-NURSE) (subcategories)` == "Request Tests(Lab, Img, etc)" ~ "Request Tests (Lab, Img, etc)",
-                                       TRUE ~ `What (DR-NURSE) (subcategories)`),
+                                                       TRUE ~ `What (DR-NURSE) (subcategories)`),
          `What (DR-NURSE) (subcategories)` = case_when(`What (DR-NURSE) (subcategories)` == "Other Indiret Care" ~ "Other Indirect Care",
                                                        TRUE ~ `What (DR-NURSE) (subcategories)`),
          task_order = as.numeric(str_extract(`observer/session/task id`, "(?<=_)\\d+$"))) %>% 
@@ -66,32 +76,39 @@ data_wmbt_time <- DOCTOR_NURSE_FORM_BRB_v1 %>%
          !`observer/session/task id` == "10175_10260_60") %>% # seems like a test session 
   filter(!`session id` == 10180,
          !`session id` == 10184, 
-         !`session id` == 10189)%>% # Lisa
-  left_join(wombat_type_professional, join_by(`participant id` == healthcare_work_id_v2)) 
+         !`session id` == 10189) # Lisa
+ 
+order_tasks <- data_wmbt_time %>% 
+  filter(`session id` == "10203") %>%
+  mutate(task_order = c(1:34))
 
+data_wmbt_time <- data_wmbt_time %>% 
+  filter(!`session id` == "10203") %>% 
+  rbind(order_tasks)
+  
 data_wmbt_time_2 <-  data_wmbt_time %>% 
   rename(What = `What (DR-NURSE)`,
          Subcategories = `What (DR-NURSE) (subcategories)`) %>% 
   mutate(with_whom = paste0(
-      ifelse(`[With Whom] Doctor` == 1, "Doctor, ", ""),
-      ifelse(`[With Whom] Nurse` == 1, "Nurse, ", ""),
-      ifelse(`[With Whom] Clerks` == 1, "Clerks, ", ""),
-      ifelse(`[With Whom] Patient Relation Reps` == 1, "Patient Relation Reps, ", ""),
-      ifelse(`[With Whom] Patient` == 1, "Patient, ", ""),
-      ifelse(`[With Whom] Relative` == 1, "Relative, ", ""),
-      ifelse(`[With Whom] Allied Health Professional` == 1, "Allied Health Professional, ", ""),
-      ifelse(`[With Whom] Other` == 1, "Other, ", "")
-    ) %>%
-      str_remove_all(", $") %>%
-      ifelse(. == "", "No one", .), # los vacios deberian ser NULL no  no one
-    how = paste0(
-      ifelse(`[How] Paper Based Record` == 1, "Paper, ", ""),
-      ifelse(`[How] Desktop Computer` == 1, "Desktop Computer, ", ""),
-      ifelse(`[How] Mobile Computer` == 1, "Mobile Computer, ", ""),
-      ifelse(`[How] Phone` == 1, "Phone, ", "")
+    ifelse(`[With Whom] Doctor` == 1, "Doctor, ", ""),
+    ifelse(`[With Whom] Nurse` == 1, "Nurse, ", ""),
+    ifelse(`[With Whom] Clerks` == 1, "Clerks, ", ""),
+    ifelse(`[With Whom] Patient Relation Reps` == 1, "Patient Relation Reps, ", ""),
+    ifelse(`[With Whom] Patient` == 1, "Patient, ", ""),
+    ifelse(`[With Whom] Relative` == 1, "Relative, ", ""),
+    ifelse(`[With Whom] Allied Health Professional` == 1, "Allied Health Professional, ", ""),
+    ifelse(`[With Whom] Other` == 1, "Other, ", "")
   ) %>%
     str_remove_all(", $") %>%
-    ifelse(. == "", "None", .))
+    ifelse(. == "", "No one", .), # los vacios deberian ser NULL no  no one
+  how = paste0(
+    ifelse(`[How] Paper Based Record` == 1, "Paper, ", ""),
+    ifelse(`[How] Desktop Computer` == 1, "Desktop Computer, ", ""),
+    ifelse(`[How] Mobile Computer` == 1, "Mobile Computer, ", ""),
+    ifelse(`[How] Phone` == 1, "Phone, ", "")
+  ) %>%
+    str_remove_all(", $") %>%
+    ifelse(. == "", "None", .)) 
 ```
 
 # Análisis por grupo {.tabset}
