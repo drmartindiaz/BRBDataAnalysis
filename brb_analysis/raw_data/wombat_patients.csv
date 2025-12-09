@@ -1,0 +1,47 @@
+﻿observer id;session id;location id;participant id;patient_debriefing_survey_timestamp;enumerator;q1_patient;health_facility;department_service;age_id;age;sex_id;sex;other_sex;education_id;education;education_other
+10175;10280;QEH;Vv17;;5;Vv17;1;Waiting area in triage;2;20-40;2;Female;;3;Secondary/High school;
+10176;10283;Qeh;GL18;;;;;;;;;;;;;
+10176;10284;Qeh;Gl 19;;;;;;;;;;;;;
+10175;10287;Qeh;Vv18;;5;Vv18;1;A&E;4;More than 60;1;Male;;5;Other (Please specify);College
+10154;10285;QEH;AT1;6/5/25 16:56;1;AT1;1;;2;20-40;2;Female;;5;Other (Please specify);associate
+10152;10281;QEH;TL5;;;;;;;;;;;;;
+10175;10286;QEH;Vv19;;5;Vv19;1;A&E;4;More than 60;1;Male;;3;Secondary/High school;
+10176;10289;Qeh;GL20;;;;;;;;;;;;;
+10154;10288;QEH;AT2;7/5/25 17:51;1;AT2;1;A&E;4;More than 60;2;Female;;5;Other (Please specify);unsure
+10175;10293;QEH;Vv20;;5;Vv20;1;A&E;3;40-60 ;1;Male;;5;Other (Please specify);Associate degree
+10154;10291;QEH;AT3;8/5/25 9:29;1;AT3;1;A&E;2;20-40;2;Female;;5;Other (Please specify);tertiary
+10176;10290;Qeh;Gl 21;;;;;;;;;;;;;
+10154;10292;QEH;AT4;9/5/25 9:59;1;AT4;1;A&E;4;More than 60;2;Female;;3;Secondary/High school;
+10176;10294;Qeh;GL 22;;;;;;;;;;;;;
+10175;10295;QEH;Vv21;;5;Vv21;1;Treatment room of A&E;4;More than 60;2;Female;;4;University degree or higher;
+10154;10296;QEH;AT5;12/5/25 18:02;1;AT5;1;A & E;3;40-60 ;2;Female;;4;University degree or higher;
+10176;10297;QEH;GL22;;;;;;;;;;;;;
+10175;10298;QEH;Vv22;;5;Vv22;1;Observation section of QEH;2;20-40;2;Female;;5;Other (Please specify);Vocational studies
+10154;10299;QEH;AT6;13/5/25 15:11;1;AT6;1;A& E;4;More than 60;1;Male;;3;Secondary/High school;
+10152;10300;QEH;TL7;;;;;;;;;;;;;
+10175;10301;QEH;Vv23;;5;Vv23;1;A&E observation section;3;40-60 ;2;Female;;3;Secondary/High school;
+10154;10302;QEH;AT7;15/5/25 18:00;1;AT7;1;A&E;3;40-60 ;2;Female;;4;University degree or higher;
+10176;10303;Qeh;Gl24;;;;;;;;;;;;;
+10176;10306;QEH;GL 25;;4;GL 25;1;AED;3;40-60 ;1;Male;;3;Secondary/High school;
+10175;10305;QEH;Vv24;;5;Vv24;1;A&E observation;4;More than 60;2;Female;;4;University degree or higher;
+10154;10304;QEH;AT8;16/5/25 17:23;1;AT8;1;A&E;2;20-40;2;Female;;4;University degree or higher;
+10152;10307;QEH;TL9;;;;;;;;;;;;;
+10175;10309;QEH;Vv25;;5;Vv25;1;A&E Observation;3;40-60 ;2;Female;;3;Secondary/High school;
+10152;10320;QEH;TL10;19/5/25 19:05;2;TL8;1;A and E;2;20-40;2;Female;;3;Secondary/High school;
+10154;10310;QEH;AT9;19/5/25 19:07;1;AT9;1;A&E;3;40-60 ;2;Female;;4;University degree or higher;
+10176;10316;QEH;GL 26;;;;;;;;;;;;;
+10175;10312;QEH;Vv26;;5;Vv26;1;A&E waiting area;3;40-60 ;2;Female;;4;University degree or higher;
+10154;10311;QEH;AT10;20/5/25 18:32;1;AT10;1;A&E;4;More than 60;1;Male;;3;Secondary/High school;
+10152;10319;QEH;TL10;20/5/25 18:40;2;TL10;1;A and E;3;40-60 ;2;Female;;4;University degree or higher;
+10154;10314;QEH;AT11;21/5/25 18:09;1;AT11;1;A&E;3;40-60 ;2;Female;;3;Secondary/High school;
+10176;10315;Qeh;Gl27;;;;;;;;;;;;;
+10175;10313;QEH;Vv27;;5;Vv27;1;A&E observation;2;20-40;2;Female;;5;Other (Please specify);College
+10152;10318;QEH;TL11;21/5/25 21:09;2;TL11;1;A and E;3;40-60 ;2;Female;;3;Secondary/High school;
+10176;10317;Qeh;GL28;;4;GL 28;1;AeD;4;More than 60;2;Female;;2;Primary/Elementary school;
+10176;10323;QEH;GL29;;4;GL 29;1;AED;4;More than 60;1;Male;;3;Secondary/High school;
+10175;10321;QEH;Vv28;;5;Vv28;1;A&E waiting area;4;More than 60;2;Female;;4;University degree or higher;
+10154;10322;QEH;AT12;23/5/25 18:36;1;AT12;1;A&E;3;40-60 ;1;Male;;3;Secondary/High school;
+10152;10326;QEH;TL12;23/5/25 19:14;2;TL12;1;A and E;3;40-60 ;2;Female;;3;Secondary/High school;
+10154;10328;QEH;AT13;26/5/25 16:54;1;AT12;1;A&E;2;20-40;3;Other;;4;University degree or higher;
+10175;10325;QEH;Vv29;;;;;;;;;;;;;
+10176;10324;Qeh;GL 30;;;;;;;;;;;;;

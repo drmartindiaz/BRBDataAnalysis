@@ -1,0 +1,43 @@
+﻿participant id;participant_id_2;session id;health_professional_desc
+WS2;MC2;10387;Physician
+WS3;MC3;10388;Nurse
+MC4;MC4;10389;Nurse
+WS 5;MC5;10390;Nurse
+WS6;MC6;10391;Physician
+MB9;MC9;10408;Physician
+MC 10;MC10;10409;Nurse
+MC11;MC11;10410;Nurse
+GL31;GL31;10361;Physician
+Vv31;VV31;10392;Physician
+GL;;10360;
+GL 32;GL32;10363;Nurse
+GL 33;GL33;10362;Nurse
+GL33;GL34;10365;Physician
+TL17;TL17;10366;Physician
+AT1;AT24;10396;Nurse
+TL18;TL18;10400;Physician
+AT2 (polyclinic);AT23;10395;Nurse
+TL20;;10398;
+Vv32;VV32;10393;Nurse
+Vv33;VV33;10397;Physician
+AT4 polyclinic;AT26;10486;Physician
+TL20;TL20;10399;Nurse
+TL21;TL21;10406;Nurse
+AT5 (polyclinic);AT27;10487;Nurse
+Vv34;VV34;10407;Nurse
+Vv35;VV35;10426;Physician
+GL 37;GL37;10447;Nurse
+GL 39;GL39;10448;Physician
+GL 40;GL40;10449;Physician
+Vv37;VV37;10450;Nurse
+Vv39;VV39;10452;Physician
+Vv40;VV40;10466;Nurse
+Vv41;VV41;10467;Physician
+Doctor;KR2;10507;Physician
+Nurse;KR3;10508;Nurse
+Doctor;KR4;10509;Physician
+Nurse 2;KR5;10510;Nurse
+falta en data wombat;MC7;10386;Clerk
+falta en data wombat;TL19;10401;Clerk
+falta en data wombat;MC8;10411;Clerk
+falta en data wombat;GL38;10446;Clerk
